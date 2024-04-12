@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      animation: fondoColor 6s infinite;
+    }
+    @keyframes fondoColor {
+      0% {
+        background-color: rgb(49, 49, 49);
+      }
+      50% {
+        background-color: rgb(255, 0, 0);
+      }
+      100% {
+        background-color: rgb(49, 49, 49);
+      }
+    }
+    .cell {
+      animation: bordesColor 6s infinite;
+    }
+    @keyframes bordesColor {
+      0% {
+        border: 1px solid rgb(49, 49, 49);
+      }
+      50% {
+        border: 1px solid rgb(255, 0, 0);
+      }
+      100% {
+        border: 1px solid rgb(49, 49, 49);
+      }
+    }
+    .row {
+      display: flex;
+    }
+  </style>
+  <body>
+    <div class="container-game"></div>
+    <script>
+      const gameContainer = document.querySelector(".container-game");
+      class Grid {
+        constructor(rows, cols) {
+          this.rows = rows;
+          this.cols = cols;
+          this.size = 50;
+          this.grid = [];
+          this.tetrisShapes = {
+            I: [
+              [1, 1, 1, 1],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+            ],
+            J: [
+              [1, 0, 0],
+              [1, 1, 1],
+              [0, 0, 0],
+            ],
+            L: [
+              [0, 0, 1],
+              [1, 1, 1],
+              [0, 0, 0],
+            ],
+            O: [
+              [1, 1],
+              [1, 1],
+            ],
+            S: [
+              [0, 1, 1],
+              [1, 1, 0],
+              [0, 0, 0],
+            ],
+            T: [
+              [0, 1, 0],
+              [1, 1, 1],
+              [0, 0, 0],
+            ],
+            Z: [
+              [1, 1, 0],
+              [0, 1, 1],
+              [0, 0, 0],
+            ],
+          };
+          this.colors = {
+            I: "cyan",
+            J: "blue",
+            L: "orange",
+            O: "yellow",
+            S: "green",
+            T: "purple",
+            Z: "red",
+          };
+          this.createGrid();
+        }
+        createGrid() {
+          for (let i = 0; i < this.rows; i++) {
+            let row = [];
+            for (let j = 0; j < this.cols; j++) {
+              row.push(0);
+            }
+            this.grid.push(row);
+          }
+        }
+        renderGrid() {
+          for (let i = 0; i < this.rows; i++) {
+            const row = document.createElement("div");
+            row.classList.add("row");
+            for (let j = 0; j < this.cols; j++) {
+              const cell = document.createElement("div");
+              // cell.classList.add("cell");
+              cell.style.cssText = `
+                width: ${this.size}px;
+                height: ${this.size}px;
+                text-align: center;
+                line-height: ${this.size}px;
+                color: rgba(255, 255, 255, .2);
+                background-color: ${this.grid[i][j] ? this.colors.I : "white"};
+              `;
+              cell.textContent = this.grid[i][j];
+              row.appendChild(cell);
+            }
+            gameContainer.appendChild(row);
+          }
+        }
+        drawPiece(Piece, x, y) {
+          for (let i = 0; i < Piece.length; i++) {
+            for (let j = 0; j < Piece[i].length; j++) {
+              if (Piece[i][j]) {
+                this.grid[y + i][x + j] = Piece[i][j];
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.style.cssText = `
+                  width: ${this.size}px;
+                  height: ${this.size}px;
+                  text-align: center;
+                  line-height: ${this.size}px;
+                  color: rgba(255, 255, 255, .2);
+                  background-color: ${this.colors.I};
+                `;
+              }
+            }
+          }
+        }
+        clearGrid() {
+          while (gameContainer.firstChild) {
+            gameContainer.removeChild(gameContainer.firstChild);
+          }
+        }
+        movePieceDown(piece, x, y) {
+          if(piece[x][y] === 1) {
+            if(piece[x][y]>this.rows) {
+              return y;
+            }
+          }
+          for (let i = 0; i < piece.length; i++) {
+            for (let j = 0; j < piece[i].length; j++) {
+              if (piece[i][j]) {
+                this.grid[y + i][x + j] = 0;
+                // this.grid[y + i + 1][x + j] = piece[i][j];
+              }
+            }
+          }
+          y++;
+          this.drawPiece(piece, x, y);
+          return y;
+        }
+      }
+      const grid = new Grid(15, 6);
+      const x = 1;
+      let y = 0;
+      function randomPiece() {
+        const pieces = Object.keys(grid.tetrisShapes);
+        const randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
+        return grid.tetrisShapes[randomPiece];
+      }
+      console.log(grid.grid);
+      grid.drawPiece(grid.tetrisShapes.I, x, y);
+      grid.renderGrid();
+      setInterval(() => {
+        const piece = randomPiece();
+        y = grid.movePieceDown(piece, x, y);
+        grid.clearGrid();
+        grid.renderGrid();
+      }, 1000);
+    </script>
+  </body>
+</html>
